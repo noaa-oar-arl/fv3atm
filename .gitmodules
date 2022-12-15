@@ -9,7 +9,7 @@
 [submodule "ccpp/physics"]
   path = ccpp/physics
   url = https://github.com/noaa-oar-arl/ccpp-physics
-  branch = develop
+  branch = feature/aqm_canopy-noahmp
 [submodule "upp"]
   path = upp
   url = https://github.com/NOAA-EMC/UPP
