@@ -674,6 +674,7 @@ module GFS_typedefs
     logical              :: cplwav2atm      !< default no wav->atm coupling
     logical              :: cplaqm          !< default no cplaqm collection
     logical              :: cplchm          !< default no cplchm collection
+    logical              :: cpllnd          !< default no cpllnd collection
     logical              :: rrfs_smoke      !< default no rrfs_smoke collection
     integer              :: dust_smoke_rrtmg_band_number !< band number to affect in rrtmg_pre from smoke and dust
     logical              :: use_cice_alb    !< default .false. - i.e. don't use albedo imported from the ice model
@@ -786,8 +787,9 @@ module GFS_typedefs
     real(kind_phys)      :: lfnc_k                  !<          Logistic function transition depth (Pa)
     real(kind_phys)      :: lfnc_p0                 !<          Logistic function transition level (Pa)
     logical              :: doGP_lwscat             !< If true, include scattering in longwave cloud-optics, only compatible w/ GP cloud-optics
-    logical              :: doGP_sgs_cnv            !< If true, include SubGridScale convective cloud in RRTMGP
-    logical              :: doGP_sgs_mynn           !< If true, include SubGridScale MYNN-EDMF cloud in RRTMGP 
+    logical              :: doGP_sgs_cnv            !< If true, include explicit SubGridScale convective cloud in RRTMGP
+    logical              :: doGP_sgs_mynn           !< If true, include explicit SubGridScale MYNN-EDMF cloud in RRTMGP 
+    logical              :: doGP_smearclds          !< If true, include implicit SubGridScale clouds in RRTMGP
     real(kind_phys)      :: minGPpres               !< Minimum pressure allowed in RRTMGP.
     real(kind_phys)      :: maxGPpres               !< Maximum pressure allowed in RRTMGP.
     real(kind_phys)      :: minGPtemp               !< Minimum temperature allowed in RRTMGP.
@@ -886,6 +888,7 @@ module GFS_typedefs
 
     !--- Thompson's microphysical parameters
     logical              :: ltaerosol       !< flag for aerosol version
+    logical              :: mraerosol       !< flag for merra2_aerosol_aware
     logical              :: lradar          !< flag for radar reflectivity
     real(kind=kind_phys) :: nsradar_reset   !< seconds between resetting radar reflectivity calculation
     real(kind=kind_phys) :: ttendlim        !< temperature tendency limiter per time step in K/s
@@ -1177,6 +1180,7 @@ module GFS_typedefs
     real(kind=kind_phys) :: rlmx            !< maximum allowed mixing length in boundary layer mass flux scheme
     real(kind=kind_phys) :: elmx            !< maximum allowed dissipation mixing length in boundary layer mass flux scheme
     integer              :: sfc_rlm         !< choice of near surface mixing length in boundary layer mass flux scheme
+    integer              :: tc_pbl          !< control for TC applications in the PBL scheme
 
 !--- parameters for canopy heat storage (CHS) parameterization
     real(kind=kind_phys) :: h0facu          !< CHS factor for sensible heat flux in unstable surface layer
@@ -2524,7 +2528,7 @@ module GFS_typedefs
        Coupling%tsfc_radtime       = clear_val
     endif
 
-    if (Model%cplflx .or. Model%do_sppt .or. Model%cplchm .or. Model%ca_global) then
+    if (Model%cplflx .or. Model%do_sppt .or. Model%cplchm .or. Model%ca_global .or. Model%cpllnd) then
       allocate (Coupling%rain_cpl (IM))
       allocate (Coupling%snow_cpl (IM))
       Coupling%rain_cpl = clear_val
@@ -2540,7 +2544,7 @@ module GFS_typedefs
       Coupling%v10mi_cpl = clear_val
     endif
 
-    if (Model%cplflx .or. Model%cplchm) then
+    if (Model%cplflx .or. Model%cplchm .or. Model%cpllnd) then
       !--- instantaneous quantities
       allocate (Coupling%tsfci_cpl (IM))
       Coupling%tsfci_cpl = clear_val
@@ -2552,6 +2556,36 @@ module GFS_typedefs
 
 !     Coupling%zorlwav_cpl  = clear_val
 !   endif
+
+    if (Model%cplflx .or. Model%cpllnd) then
+      allocate (Coupling%dlwsfc_cpl  (IM))
+      allocate (Coupling%dswsfc_cpl  (IM))
+      allocate (Coupling%psurfi_cpl  (IM))
+      allocate (Coupling%nswsfc_cpl  (IM))
+      allocate (Coupling%nswsfci_cpl (IM))
+      allocate (Coupling%nnirbmi_cpl (IM))
+      allocate (Coupling%nnirdfi_cpl (IM))
+      allocate (Coupling%nvisbmi_cpl (IM))
+      allocate (Coupling%nvisdfi_cpl (IM))
+      allocate (Coupling%nnirbm_cpl  (IM))
+      allocate (Coupling%nnirdf_cpl  (IM))
+      allocate (Coupling%nvisbm_cpl  (IM))
+      allocate (Coupling%nvisdf_cpl  (IM))
+
+      Coupling%dlwsfc_cpl  = clear_val
+      Coupling%dswsfc_cpl  = clear_val
+      Coupling%psurfi_cpl  = clear_val
+      Coupling%nswsfc_cpl  = clear_val
+      Coupling%nswsfci_cpl = clear_val
+      Coupling%nnirbmi_cpl = clear_val
+      Coupling%nnirdfi_cpl = clear_val
+      Coupling%nvisbmi_cpl = clear_val
+      Coupling%nvisdfi_cpl = clear_val
+      Coupling%nnirbm_cpl  = clear_val
+      Coupling%nnirdf_cpl  = clear_val
+      Coupling%nvisbm_cpl  = clear_val
+      Coupling%nvisdf_cpl  = clear_val
+    end if
 
     if (Model%cplflx) then
       !--- incoming quantities
@@ -2607,35 +2641,21 @@ module GFS_typedefs
       allocate (Coupling%dvsfc_cpl  (IM))
       allocate (Coupling%dtsfc_cpl  (IM))
       allocate (Coupling%dqsfc_cpl  (IM))
-      allocate (Coupling%dlwsfc_cpl (IM))
-      allocate (Coupling%dswsfc_cpl (IM))
       allocate (Coupling%dnirbm_cpl (IM))
       allocate (Coupling%dnirdf_cpl (IM))
       allocate (Coupling%dvisbm_cpl (IM))
       allocate (Coupling%dvisdf_cpl (IM))
       allocate (Coupling%nlwsfc_cpl (IM))
-      allocate (Coupling%nswsfc_cpl (IM))
-      allocate (Coupling%nnirbm_cpl (IM))
-      allocate (Coupling%nnirdf_cpl (IM))
-      allocate (Coupling%nvisbm_cpl (IM))
-      allocate (Coupling%nvisdf_cpl (IM))
 
       Coupling%dusfc_cpl  = clear_val
       Coupling%dvsfc_cpl  = clear_val
       Coupling%dtsfc_cpl  = clear_val
       Coupling%dqsfc_cpl  = clear_val
-      Coupling%dlwsfc_cpl = clear_val
-      Coupling%dswsfc_cpl = clear_val
       Coupling%dnirbm_cpl = clear_val
       Coupling%dnirdf_cpl = clear_val
       Coupling%dvisbm_cpl = clear_val
       Coupling%dvisdf_cpl = clear_val
       Coupling%nlwsfc_cpl = clear_val
-      Coupling%nswsfc_cpl = clear_val
-      Coupling%nnirbm_cpl = clear_val
-      Coupling%nnirdf_cpl = clear_val
-      Coupling%nvisbm_cpl = clear_val
-      Coupling%nvisdf_cpl = clear_val
 
       !--- instantaneous quantities
       allocate (Coupling%dusfci_cpl  (IM))
@@ -2649,14 +2669,8 @@ module GFS_typedefs
       allocate (Coupling%dvisbmi_cpl (IM))
       allocate (Coupling%dvisdfi_cpl (IM))
       allocate (Coupling%nlwsfci_cpl (IM))
-      allocate (Coupling%nswsfci_cpl (IM))
-      allocate (Coupling%nnirbmi_cpl (IM))
-      allocate (Coupling%nnirdfi_cpl (IM))
-      allocate (Coupling%nvisbmi_cpl (IM))
-      allocate (Coupling%nvisdfi_cpl (IM))
       allocate (Coupling%t2mi_cpl    (IM))
       allocate (Coupling%q2mi_cpl    (IM))
-      allocate (Coupling%psurfi_cpl  (IM))
       allocate (Coupling%oro_cpl     (IM))
       allocate (Coupling%slmsk_cpl   (IM))
 
@@ -2671,14 +2685,8 @@ module GFS_typedefs
       Coupling%dvisbmi_cpl = clear_val
       Coupling%dvisdfi_cpl = clear_val
       Coupling%nlwsfci_cpl = clear_val
-      Coupling%nswsfci_cpl = clear_val
-      Coupling%nnirbmi_cpl = clear_val
-      Coupling%nnirdfi_cpl = clear_val
-      Coupling%nvisbmi_cpl = clear_val
-      Coupling%nvisdfi_cpl = clear_val
       Coupling%t2mi_cpl    = clear_val
       Coupling%q2mi_cpl    = clear_val
-      Coupling%psurfi_cpl  = clear_val
       Coupling%oro_cpl     = clear_val  !< pointer to sfcprop%oro
       Coupling%slmsk_cpl   = clear_val  !< pointer to sfcprop%slmsk
     endif
@@ -2709,16 +2717,19 @@ module GFS_typedefs
     if (Model%cplchm .or. Model%rrfs_smoke) then
       !--- outgoing instantaneous quantities
       allocate (Coupling%ushfsfci  (IM))
-      !--- accumulated convective rainfall
-      allocate (Coupling%rainc_cpl (IM))
       ! -- instantaneous 3d fluxes of nonconvective ice and liquid precipitations
       allocate (Coupling%pfi_lsan  (IM,Model%levs))
       allocate (Coupling%pfl_lsan  (IM,Model%levs))
-      Coupling%rainc_cpl = clear_val
       Coupling%ushfsfci  = clear_val
       Coupling%pfi_lsan  = clear_val
       Coupling%pfl_lsan  = clear_val
     endif
+
+    if (Model%cplchm .or. Model%rrfs_smoke .or. Model%cplflx .or. Model%cpllnd) then
+      !--- accumulated convective rainfall
+      allocate (Coupling%rainc_cpl (IM))
+      Coupling%rainc_cpl = clear_val
+    end if
 
     ! -- additional coupling options for air quality
     if (Model%cplaqm .and. .not.Model%cplflx) then
@@ -2787,7 +2798,7 @@ module GFS_typedefs
     endif
 
     !--- needed for Thompson's aerosol option
-    if(Model%imp_physics == Model%imp_physics_thompson .and. Model%ltaerosol) then
+    if(Model%imp_physics == Model%imp_physics_thompson .and. (Model%ltaerosol .or. Model%mraerosol)) then
       allocate (Coupling%nwfa2d (IM))
       allocate (Coupling%nifa2d (IM))
       Coupling%nwfa2d   = clear_val
@@ -2928,6 +2939,7 @@ module GFS_typedefs
     logical              :: cplwav2atm     = .false.         !< default no cplwav2atm coupling
     logical              :: cplaqm         = .false.         !< default no cplaqm collection
     logical              :: cplchm         = .false.         !< default no cplchm collection
+    logical              :: cpllnd         = .false.         !< default no cpllnd collection
     logical              :: rrfs_smoke     = .false.         !< default no rrfs_smoke collection
     integer              :: dust_smoke_rrtmg_band_number = 10!< band number to affect in rrtmg_pre from smoke and dust
     logical              :: use_cice_alb   = .false.         !< default no cice albedo
@@ -3017,6 +3029,7 @@ module GFS_typedefs
     logical              :: doGP_lwscat         = .false.    !< If true, include scattering in longwave cloud-optics, only compatible w/ GP cloud-optics
     logical              :: doGP_sgs_cnv        = .false.    !< If true, include SubGridScale convective cloud in RRTMGP
     logical              :: doGP_sgs_mynn       = .false.    !< If true, include SubGridScale MYNN-EDMF cloud in RRTMGP
+    logical              :: doGP_smearclds      = .true.     !< If true, include implicit SubGridScale clouds in RRTMGP 
 !--- Z-C microphysical parameters
     integer              :: imp_physics       =  99                !< choice of cloud scheme
     real(kind=kind_phys) :: psautco(2)        = (/6.0d-4,3.0d-4/)  !< [in] auto conversion coeff from ice to snow
@@ -3075,6 +3088,7 @@ module GFS_typedefs
 
     !--- Thompson microphysical parameters
     logical              :: ltaerosol      = .false.            !< flag for aerosol version
+    logical              :: mraerosol      = .false.            !< flag for merra2_aerosol_aware
     logical              :: lradar         = .false.            !< flag for radar reflectivity
     real(kind=kind_phys) :: nsradar_reset  = -999.0             !< seconds between resetting radar reflectivity calculation, set to <0 for every time step
     real(kind=kind_phys) :: ttendlim       = -999.0             !< temperature tendency limiter, set to <0 to deactivate
@@ -3350,6 +3364,7 @@ module GFS_typedefs
     real(kind=kind_phys) :: rlmx           = 300.            !< maximum allowed mixing length in boundary layer mass flux scheme
     real(kind=kind_phys) :: elmx           = 300.            !< maximum allowed dissipation mixing length in boundary layer mass flux scheme
     integer              :: sfc_rlm        = 0               !< choice of near surface mixing length in boundary layer mass flux scheme
+    integer              :: tc_pbl         = 0               !< control for TC applications in the PBL scheme
 
 !--- parameters for canopy heat storage (CHS) parameterization
     real(kind=kind_phys) :: h0facu         = 0.25
@@ -3453,7 +3468,7 @@ module GFS_typedefs
                                thermodyn_id, sfcpress_id,                                   &
                           !--- coupling parameters
                                cplflx, cplice, cplocn2atm, cplwav, cplwav2atm, cplaqm,      &
-                               cplchm, cpl_imp_mrg, cpl_imp_dbg, rrfs_smoke,                &
+                               cplchm, cpllnd, cpl_imp_mrg, cpl_imp_dbg, rrfs_smoke,        &
                                use_cice_alb, dust_smoke_rrtmg_band_number,                  &
 #ifdef IDEA_PHYS
                                lsidea, weimer_model, f107_kp_size, f107_kp_interval,        &
@@ -3476,7 +3491,7 @@ module GFS_typedefs
                                use_LW_jacobian, doGP_lwscat, damp_LW_fluxadj, lfnc_k,       &
                                lfnc_p0, iovr_convcld, doGP_sgs_cnv, doGP_sgs_mynn,          &
                           ! IN CCN forcing
-                               iccn,                                                        &
+                               iccn, mraerosol,                                             &
                           !--- microphysical parameterizations
                                imp_physics, psautco, prautco, evpco, wminco,                &
                                fprcp, pdfflag, mg_dcs, mg_qcvar, mg_ts_auto_ice, mg_rhmini, &
@@ -3553,7 +3568,7 @@ module GFS_typedefs
                                thsfc_loc,                                                   &
                           !    vertical diffusion
                                xkzm_m, xkzm_h, xkzm_s, xkzminv, moninq_fac, dspfac,         &
-                               bl_upfr, bl_dnfr, rlmx, elmx, sfc_rlm,                       &
+                               bl_upfr, bl_dnfr, rlmx, elmx, sfc_rlm, tc_pbl,               &
                           !--- canopy heat storage parameterization
                                h0facu, h0facs,                                              &
                           !--- cellular automata
@@ -3775,6 +3790,7 @@ module GFS_typedefs
     Model%cplwav2atm       = cplwav2atm
     Model%cplaqm           = cplaqm
     Model%cplchm           = cplchm .or. cplaqm
+    Model%cpllnd           = cpllnd
     Model%use_cice_alb     = use_cice_alb
     Model%cpl_imp_mrg      = cpl_imp_mrg
     Model%cpl_imp_dbg      = cpl_imp_dbg
@@ -3935,6 +3951,13 @@ module GFS_typedefs
           write(0,*) "Logic error, RRTMGP flag doGP_sgs_mynn only works with do_mynnedmf=.true."
           stop
        endif
+       if (Model%doGP_sgs_cnv .or. Model%doGP_sgs_mynn) then
+          write(0,*) "RRTMGP explicit cloud scheme being used."
+          Model%doGP_smearclds = .false.
+       else
+           write(0,*) "RRTMGP implicit cloud scheme being used."
+       endif
+
        if (Model%doGP_cldoptics_PADE .and. Model%doGP_cldoptics_LUT) then
           write(0,*) "Logic error, Both RRTMGP cloud-optics options cannot be selected. "
           stop
@@ -4018,6 +4041,11 @@ module GFS_typedefs
 
 !--- Thompson MP parameters
     Model%ltaerosol        = ltaerosol
+    Model%mraerosol        = mraerosol
+    if (Model%ltaerosol .and. Model%mraerosol) then
+      write(0,*) 'Logic error: Only one Thompson aerosol option can be true, either ltaerosol or mraerosol)'
+      stop
+    end if
     Model%lradar           = lradar
     Model%nsradar_reset    = nsradar_reset
     Model%ttendlim         = ttendlim
@@ -4354,6 +4382,7 @@ module GFS_typedefs
     Model%rlmx             = rlmx
     Model%elmx             = elmx
     Model%sfc_rlm          = sfc_rlm
+    Model%tc_pbl           = tc_pbl
 
 !--- canopy heat storage parametrization
     Model%h0facu           = h0facu
@@ -5304,6 +5333,7 @@ module GFS_typedefs
       end if
       if (Model%me == Model%master) print *,' Using Thompson double moment microphysics', &
                                           ' ltaerosol = ',Model%ltaerosol, &
+                                          ' mraerosol = ',Model%mraerosol, &
                                           ' ttendlim =',Model%ttendlim, &
                                           ' ext_diag_thompson =',Model%ext_diag_thompson, &
                                           ' dt_inner =',Model%dt_inner, &
@@ -5695,6 +5725,7 @@ module GFS_typedefs
       print *, ' cplwav2atm        : ', Model%cplwav2atm
       print *, ' cplaqm            : ', Model%cplaqm
       print *, ' cplchm            : ', Model%cplchm
+      print *, ' cpllnd            : ', Model%cpllnd
       print *, ' rrfs_smoke        : ', Model%rrfs_smoke
       print *, ' use_cice_alb      : ', Model%use_cice_alb
       print *, ' cpl_imp_mrg       : ', Model%cpl_imp_mrg
@@ -5790,6 +5821,7 @@ module GFS_typedefs
         print *, ' doGP_lwscat        : ', Model%doGP_lwscat
         print *, ' doGP_sgs_cnv       : ', Model%doGP_sgs_cnv
         print *, ' doGP_sgs_mynn      : ', Model%doGP_sgs_cnv
+        print *, ' doGP_smearclds     : ', Model%doGP_smearclds
         print *, ' iovr_convcld       : ', Model%iovr_convcld
       endif
       print *, ' '
@@ -5808,6 +5840,7 @@ module GFS_typedefs
       if (Model%imp_physics == Model%imp_physics_wsm6 .or. Model%imp_physics == Model%imp_physics_thompson) then
         print *, ' Thompson microphysical parameters'
         print *, ' ltaerosol         : ', Model%ltaerosol
+        print *, ' mraerosol         : ', Model%mraerosol
         print *, ' lradar            : ', Model%lradar
         print *, ' nsradar_reset     : ', Model%nsradar_reset
         print *, ' lrefres           : ', Model%lrefres
@@ -6037,6 +6070,7 @@ module GFS_typedefs
       print *, ' rlmx              : ', Model%rlmx
       print *, ' elmx              : ', Model%elmx
       print *, ' sfc_rlm           : ', Model%sfc_rlm
+      print *, ' tc_pbl            : ', Model%tc_pbl
       print *, ' '
       print *, 'parameters for canopy heat storage parametrization'
       print *, ' h0facu            : ', Model%h0facu
@@ -6315,7 +6349,7 @@ module GFS_typedefs
     Tbd%acvb = clear_val
     Tbd%acvt = clear_val
 
-    if (Model%cplflx .or. Model%cplchm) then
+    if (Model%cplflx .or. Model%cplchm .or. Model%cpllnd) then
       allocate (Tbd%drain_cpl (IM))
       allocate (Tbd%dsnow_cpl (IM))
       Tbd%drain_cpl = clear_val
