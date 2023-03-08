@@ -1456,6 +1456,9 @@ module GFS_typedefs
     real(kind=kind_phys) :: rhcmax          ! maximum critical relative humidity, replaces rhc_max in physcons.F90
     real(kind=kind_phys) :: huge            !< huge fill value
 
+!--- AQM Canopy
+    logical              :: do_canopy       !< control flag for aqm canopy effects 
+
     contains
       procedure :: init            => control_initialize
       procedure :: init_chemistry  => control_chemistry_initialize
@@ -3540,7 +3543,10 @@ module GFS_typedefs
     real(kind=kind_phys) :: radar_tten_limits(2) = (/ limit_unspecified, limit_unspecified /)
     integer :: itime
     integer :: w3kindreal,w3kindint
-    
+   
+!--- switch for aqm canopy effects
+    logical :: do_canopy       = .false.         !< flag for canopy option
+ 
 !--- END NAMELIST VARIABLES
 
     NAMELIST /gfs_physics_nml/                                                              &
@@ -3676,7 +3682,9 @@ module GFS_typedefs
                                addsmoke_flag, fire_turb, mix_chem,                          &
                           !--- (DFI) time ranges with radar-prescribed microphysics tendencies
                           !          and (maybe) convection suppression
-                               fh_dfi_radar, radar_tten_limits, do_cap_suppress
+                               fh_dfi_radar, radar_tten_limits, do_cap_suppress,            &
+                          !    aqm canopy option 
+                               do_canopy
 
 !--- other parameters
     integer :: nctp    =  0                !< number of cloud types in CS scheme
@@ -4542,6 +4550,9 @@ module GFS_typedefs
     Model%n_var_lndp       = n_var_lndp
     Model%do_spp           = do_spp
     Model%n_var_spp        = n_var_spp
+
+!--- aqm canopy effects in physics
+    Model%do_canopy        = do_canopy
 
     if (Model%lndp_type/=0) then
       allocate(Model%lndp_var_list(Model%n_var_lndp))
@@ -6355,6 +6366,7 @@ module GFS_typedefs
       print *, ' restart           : ', Model%restart
       print *, ' lsm_cold_start    : ', Model%lsm_cold_start
       print *, ' hydrostatic       : ', Model%hydrostatic
+      print *, ' do_canopy         : ', Model%do_canopy
     endif
 
   end subroutine control_print
