@@ -3731,13 +3731,10 @@ module GFS_typedefs
                           !--- (DFI) time ranges with radar-prescribed microphysics tendencies
                           !          and (maybe) convection suppression
                                fh_dfi_radar, radar_tten_limits, do_cap_suppress,            &
-<<<<<<< HEAD
                           !    aqm canopy option 
                                do_canopy
-=======
                           !--- GSL lightning threat indices
                                lightning_threat
->>>>>>> develop
 
 !--- other parameters
     integer :: nctp    =  0                !< number of cloud types in CS scheme
@@ -6446,14 +6443,11 @@ module GFS_typedefs
       print *, ' first_time_step   : ', Model%first_time_step
       print *, ' restart           : ', Model%restart
       print *, ' lsm_cold_start    : ', Model%lsm_cold_start
-<<<<<<< HEAD
       print *, ' hydrostatic       : ', Model%hydrostatic
       print *, ' do_canopy         : ', Model%do_canopy
-=======
       print *, ' '
       print *, 'lightning threat indexes'
       print *, ' lightning_threat  : ', Model%lightning_threat
->>>>>>> develop
     endif
 
   end subroutine control_print
