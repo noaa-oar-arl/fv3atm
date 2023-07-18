@@ -3992,7 +3992,7 @@ module GFS_typedefs
                           !          and (maybe) convection suppression
                                fh_dfi_radar, radar_tten_limits, do_cap_suppress,            &
                           !    aqm canopy option 
-                               do_canopy
+                               do_canopy,                                                   &
                           !--- GSL lightning threat indices
                                lightning_threat
 
