@@ -7113,6 +7113,9 @@
 [do_canopy]
   standard_name = flag_for_canopy_option
   long_name = flag for in-canopy eddy diffusivity adjustment option
+  units = flag
+  dimensions = ()
+  type = logical
 [clm_lake_depth_default]
   standard_name = default_lake_depth_in_clm_lake_model
   long_name = default lake depth in clm lake model
