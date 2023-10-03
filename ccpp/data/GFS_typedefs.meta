@@ -1598,7 +1598,7 @@
 [canopyffracxy]
   standard_name = canopy_forest_fraction
   long_name = canopy forest fraction
-  units = m
+  units = none
   dimensions = (horizontal_loop_extent)
   type = real
   kind = kind_phys
@@ -1606,7 +1606,7 @@
 [canopycluxy]
   standard_name = canopy_clumping_index
   long_name = canopy clumping index
-  units = m
+  units = none
   dimensions = (horizontal_loop_extent)
   type = real
   kind = kind_phys
