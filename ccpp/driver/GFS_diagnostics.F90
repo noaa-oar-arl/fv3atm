@@ -4049,6 +4049,58 @@ module GFS_diagnostics
     enddo
   endif
 
+  if (Model%rdcanopylai) then
+    idx = idx + 1
+    ExtDiag(idx)%axes = 2
+    ExtDiag(idx)%name = 'canopylaixy'
+    ExtDiag(idx)%desc = 'canopy leaf area index'
+    ExtDiag(idx)%unit = 'number'
+    ExtDiag(idx)%mod_name = 'gfs_sfc'
+    allocate (ExtDiag(idx)%data(nblks))
+    do nb = 1,nblks
+      ExtDiag(idx)%data(nb)%var2 => sfcprop(nb)%canopylaixy(:)
+    enddo
+  endif
+
+  if (Model%rdcanopyfch) then
+    idx = idx + 1
+    ExtDiag(idx)%axes = 2
+    ExtDiag(idx)%name = 'canopyfchxy'
+    ExtDiag(idx)%desc = 'canopy forest height'
+    ExtDiag(idx)%unit = 'number'
+    ExtDiag(idx)%mod_name = 'gfs_sfc'
+    allocate (ExtDiag(idx)%data(nblks))
+    do nb = 1,nblks
+      ExtDiag(idx)%data(nb)%var2 => sfcprop(nb)%canopyfchxy(:)
+    enddo
+  endif
+
+  if (Model%rdcanopyffrac) then
+    idx = idx + 1
+    ExtDiag(idx)%axes = 2
+    ExtDiag(idx)%name = 'canopyffracxy'
+    ExtDiag(idx)%desc = 'canopy forest fraction'
+    ExtDiag(idx)%unit = 'number'
+    ExtDiag(idx)%mod_name = 'gfs_sfc'
+    allocate (ExtDiag(idx)%data(nblks))
+    do nb = 1,nblks
+      ExtDiag(idx)%data(nb)%var2 => sfcprop(nb)%canopyffracxy(:)
+    enddo
+  endif
+
+  if (Model%rdcanopyclu) then
+    idx = idx + 1
+    ExtDiag(idx)%axes = 2
+    ExtDiag(idx)%name = 'canopycluxy'
+    ExtDiag(idx)%desc = 'canopy clumping index'
+    ExtDiag(idx)%unit = 'number'
+    ExtDiag(idx)%mod_name = 'gfs_sfc'
+    allocate (ExtDiag(idx)%data(nblks))
+    do nb = 1,nblks
+      ExtDiag(idx)%data(nb)%var2 => sfcprop(nb)%canopycluxy(:)
+    enddo
+  endif
+
     do num = 1,Model%nvegcat
       write (xtra,'(i2)') num
       idx = idx + 1
