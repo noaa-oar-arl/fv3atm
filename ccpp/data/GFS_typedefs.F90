@@ -345,7 +345,7 @@ module GFS_typedefs
     real (kind=kind_phys), pointer :: xlaixy  (:)  => null()  !<
     real (kind=kind_phys), pointer :: canopylaixy    (:)  => null()  !<
     real (kind=kind_phys), pointer :: canopyfchxy    (:)  => null()  !<
-    real (kind=kind_phys), pointer :: canopyffracxy  (:)  => null()  !<
+    real (kind=kind_phys), pointer :: canopyfrtxy  (:)  => null()  !<
     real (kind=kind_phys), pointer :: canopycluxy    (:)  => null()  !<
     real (kind=kind_phys), pointer :: taussxy (:)  => null()  !<
     real (kind=kind_phys), pointer :: smcwtdxy(:)  => null()  !<
@@ -1025,7 +1025,7 @@ module GFS_typedefs
     logical              :: rdlai           !< read LAI from input file (for RUC LSM or NOAH LSM WRFv4)
     logical              :: rdcanopylai     !< read canopy LAI from input file (for RUC LSM or NOAH LSM WRFv4)
     logical              :: rdcanopyfch     !< read canopy FCH from input file (for RUC LSM or NOAH LSM WRFv4)
-    logical              :: rdcanopyffrac   !< read canopy FFRAC from input file (for RUC LSM or NOAH LSM WRFv4)
+    logical              :: rdcanopyfrt     !< read canopy FFRAC from input file (for RUC LSM or NOAH LSM WRFv4)
     logical              :: rdcanopyclu     !< read canopy CLU from input file (for RUC LSM or NOAH LSM WRFv4)
     logical              :: ua_phys         !< flag for using University of Arizona? extension to NOAH LSM WRFv4
     logical              :: usemonalb       !< flag to read surface diffused shortwave albedo from input file for NOAH LSM WRFv4
@@ -2542,13 +2542,13 @@ module GFS_typedefs
       allocate (Sfcprop%xlaixy   (IM))
       allocate (Sfcprop%canopylaixy   (IM))
       allocate (Sfcprop%canopyfchxy   (IM))
-      allocate (Sfcprop%canopyffracxy (IM))
+      allocate (Sfcprop%canopyfrtxy (IM))
       allocate (Sfcprop%canopycluxy   (IM))
       allocate (Sfcprop%rca      (IM))
       Sfcprop%xlaixy     = clear_val
       Sfcprop%canopylaixy     = clear_val
       Sfcprop%canopyfchxy     = clear_val
-      Sfcprop%canopyffracxy   = clear_val
+      Sfcprop%canopyfrtxy   = clear_val
       Sfcprop%canopycluxy     = clear_val
       Sfcprop%rca        = clear_val
     end if
@@ -2598,7 +2598,7 @@ module GFS_typedefs
       allocate (Sfcprop%xlaixy   (IM))
       allocate (Sfcprop%canopylaixy   (IM))
       allocate (Sfcprop%canopyfchxy   (IM))
-      allocate (Sfcprop%canopyffracxy (IM))
+      allocate (Sfcprop%canopyfrtxy (IM))
       allocate (Sfcprop%canopycluxy   (IM))
       allocate (Sfcprop%taussxy  (IM))
       allocate (Sfcprop%smcwtdxy (IM))
@@ -2637,7 +2637,7 @@ module GFS_typedefs
       Sfcprop%xlaixy     = clear_val
       Sfcprop%canopylaixy     = clear_val
       Sfcprop%canopyfchxy     = clear_val
-      Sfcprop%canopyffracxy   = clear_val
+      Sfcprop%canopyfrtxy   = clear_val
       Sfcprop%canopycluxy     = clear_val
       Sfcprop%taussxy    = clear_val
       Sfcprop%smcwtdxy   = clear_val
@@ -2722,9 +2722,9 @@ module GFS_typedefs
           allocate (Sfcprop%canopyfchxy (IM))
           Sfcprop%canopyfchxy = clear_val
        end if
-       if (Model%rdcanopyffrac) then
-          allocate (Sfcprop%canopyffracxy (IM))
-          Sfcprop%canopyffracxy = clear_val
+       if (Model%rdcanopyfrt) then
+          allocate (Sfcprop%canopyfrtxy (IM))
+          Sfcprop%canopyfrtxy = clear_val
        end if
        if (Model%rdcanopyclu) then
           allocate (Sfcprop%canopycluxy (IM))
@@ -3517,7 +3517,7 @@ module GFS_typedefs
     logical              :: rdlai          = .false.         !< read LAI from input file (for RUC LSM or NOAH LSM WRFv4)
     logical              :: rdcanopylai    = .false.         !< read canopy LAI from input file (for RUC LSM or NOAH LSM WRFv4)
     logical              :: rdcanopyfch    = .false.         !< read canopy FCH from input file (for RUC LSM or NOAH LSM WRFv4)
-    logical              :: rdcanopyffrac  = .false.         !< read canopy FFRAC from input file (for RUC LSM or NOAH LSM WRFv4)
+    logical              :: rdcanopyfrt  = .false.         !< read canopy FFRAC from input file (for RUC LSM or NOAH LSM WRFv4)
     logical              :: rdcanopyclu    = .false.         !< read canopy CLU from input file (for RUC LSM or NOAH LSM WRFv4)
     logical              :: ua_phys        = .false.         !< flag for using University of Arizona? extension to NOAH LSM WRFv4
     logical              :: usemonalb      = .true.          !< flag to read surface diffused shortwave albedo from input file for NOAH LSM WRFv4
@@ -3968,7 +3968,7 @@ module GFS_typedefs
                                avg_max_length,                                              &
                           !--- land/surface model control
                                lsm, lsoil, lsoil_lsm, lsnow_lsm, kice, rdlai,               &
-                               rdcanopylai, rdcanopyfch, rdcanopyffrac,rdcanopyclu,         &
+                               rdcanopylai, rdcanopyfch, rdcanopyfrt,rdcanopyclu,         &
                                nmtvr, ivegsrc, use_ufo, iopt_thcnd, ua_phys, usemonalb,     &
                                aoasis, fasdas, exticeden, nvegcat, nsoilcat,                &
                           !    Noah MP options
@@ -4628,9 +4628,9 @@ module GFS_typedefs
       stop
     end if
     ! Flag to read canopy forest fraction from input files (initial conditions)
-    Model%rdcanopyffrac = rdcanopyffrac
-    if (Model%rdcanopyffrac .and. .not. Model%lsm == Model%lsm_ruc .and. .not. Model%lsm == Model%lsm_noah) then
-      write(0,*) 'Logic error: rdcanopyffrac = .true. only works with RUC and NOAH LSM'
+    Model%rdcanopyfrt = rdcanopyfrt
+    if (Model%rdcanopyfrt .and. .not. Model%lsm == Model%lsm_ruc .and. .not. Model%lsm == Model%lsm_noah) then
+      write(0,*) 'Logic error: rdcanopyfrt = .true. only works with RUC and NOAH LSM'
       stop
     end if
     ! Flag to read canopy clumping index from input files (initial conditions)
@@ -6623,7 +6623,7 @@ module GFS_typedefs
       print *, ' rdlai             : ', Model%rdlai
       print *, ' rdcanopylai       : ', Model%rdcanopylai
       print *, ' rdcanopyfch       : ', Model%rdcanopyfch
-      print *, ' rdcanopyffrac     : ', Model%rdcanopyffrac
+      print *, ' rdcanopyfrt       : ', Model%rdcanopyfrt
       print *, ' rdcanopyclu       : ', Model%rdcanopyclu
       print *, ' lsoil_lsm         : ', Model%lsoil_lsm
       if (Model%lsm==Model%lsm_noahmp) then
