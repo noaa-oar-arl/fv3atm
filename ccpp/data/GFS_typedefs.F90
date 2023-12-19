@@ -1025,7 +1025,7 @@ module GFS_typedefs
     logical              :: rdlai           !< read LAI from input file (for RUC LSM or NOAH LSM WRFv4)
     logical              :: rdcanopylai     !< read canopy LAI from input file (for RUC LSM or NOAH LSM WRFv4)
     logical              :: rdcanopyfch     !< read canopy FCH from input file (for RUC LSM or NOAH LSM WRFv4)
-    logical              :: rdcanopyfrt     !< read canopy FFRAC from input file (for RUC LSM or NOAH LSM WRFv4)
+    logical              :: rdcanopyfrt     !< read canopy FRT from input file (for RUC LSM or NOAH LSM WRFv4)
     logical              :: rdcanopyclu     !< read canopy CLU from input file (for RUC LSM or NOAH LSM WRFv4)
     logical              :: ua_phys         !< flag for using University of Arizona? extension to NOAH LSM WRFv4
     logical              :: usemonalb       !< flag to read surface diffused shortwave albedo from input file for NOAH LSM WRFv4
@@ -3517,7 +3517,7 @@ module GFS_typedefs
     logical              :: rdlai          = .false.         !< read LAI from input file (for RUC LSM or NOAH LSM WRFv4)
     logical              :: rdcanopylai    = .false.         !< read canopy LAI from input file (for RUC LSM or NOAH LSM WRFv4)
     logical              :: rdcanopyfch    = .false.         !< read canopy FCH from input file (for RUC LSM or NOAH LSM WRFv4)
-    logical              :: rdcanopyfrt  = .false.         !< read canopy FFRAC from input file (for RUC LSM or NOAH LSM WRFv4)
+    logical              :: rdcanopyfrt    = .false.         !< read canopy FRT from input file (for RUC LSM or NOAH LSM WRFv4)
     logical              :: rdcanopyclu    = .false.         !< read canopy CLU from input file (for RUC LSM or NOAH LSM WRFv4)
     logical              :: ua_phys        = .false.         !< flag for using University of Arizona? extension to NOAH LSM WRFv4
     logical              :: usemonalb      = .true.          !< flag to read surface diffused shortwave albedo from input file for NOAH LSM WRFv4

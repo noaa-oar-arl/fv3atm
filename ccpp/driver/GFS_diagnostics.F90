@@ -4144,16 +4144,16 @@ module GFS_diagnostics
     enddo
   endif
 
-  if (Model%rdcanopyffrac) then
+  if (Model%rdcanopyfrt) then
     idx = idx + 1
     ExtDiag(idx)%axes = 2
-    ExtDiag(idx)%name = 'canopyffracxy'
+    ExtDiag(idx)%name = 'canopyfrtxy'
     ExtDiag(idx)%desc = 'canopy forest fraction'
     ExtDiag(idx)%unit = 'number'
     ExtDiag(idx)%mod_name = 'gfs_sfc'
     allocate (ExtDiag(idx)%data(nblks))
     do nb = 1,nblks
-      ExtDiag(idx)%data(nb)%var2 => sfcprop(nb)%canopyffracxy(:)
+      ExtDiag(idx)%data(nb)%var2 => sfcprop(nb)%canopyfrtxy(:)
     enddo
   endif
 
