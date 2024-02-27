@@ -1,11 +1,11 @@
 module GFS_diagnostics
 
 !-----------------------------------------------------------------------
-!    GFS_diagnostics_mod defines a data type and contains the routine 
+!    GFS_diagnostics_mod defines a data type and contains the routine
 !    to populate said type with diagnostics from the GFS physics for
 !    use by the modeling system for output
 !-----------------------------------------------------------------------
- 
+
   use machine,            only: kind_phys
 
   !--- GFS_typedefs ---
@@ -51,7 +51,7 @@ module GFS_diagnostics
   CONTAINS
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
+
  ! Helper function for GFS_externaldiag_populate to handle the massive dtend(:,:,dtidx(:,:)) array
     subroutine add_dtend(Model,ExtDiag,IntDiag,idx,nblks,itrac,iprocess,desc,unit)
     implicit none
@@ -62,7 +62,7 @@ module GFS_diagnostics
     integer, intent(inout) :: idx
     real(kind=kind_phys), pointer :: dtend(:,:,:) ! Assumption: dtend is null iff all(dtidx <= 1)
     character(len=*), intent(in), optional :: desc, unit
-    
+
     integer :: idtend, nb
 
     idtend = Model%dtidx(itrac,iprocess)
@@ -88,17 +88,17 @@ module GFS_diagnostics
        enddo
     endif
   end subroutine add_dtend
-  
-!-------------------------------------------------------------------------      
+
+!-------------------------------------------------------------------------
 !--- GFS_externaldiag_populate ---
-!-------------------------------------------------------------------------      
-!    creates and populates a data type with GFS physics diagnostic 
+!-------------------------------------------------------------------------
+!    creates and populates a data type with GFS physics diagnostic
 !    variables which is then handed off to the IPD for use by the model
-!    infrastructure layer to output as needed.  The data type includes 
-!    names, units, conversion factors, etc.  There is no copying of data, 
-!    but instead pointers are associated to the internal representation 
+!    infrastructure layer to output as needed.  The data type includes
+!    names, units, conversion factors, etc.  There is no copying of data,
+!    but instead pointers are associated to the internal representation
 !    of each individual physics diagnostic.
-!-------------------------------------------------------------------------      
+!-------------------------------------------------------------------------
   subroutine GFS_externaldiag_populate (ExtDiag, Model, Statein, Stateout, Sfcprop, Coupling,  &
                                         Grid, Tbd, Cldprop, Radtend, IntDiag, Init_parm)
 !---------------------------------------------------------------------------------------------!
@@ -158,7 +158,7 @@ module GFS_diagnostics
     ExtDiag(:)%name = ''
     ExtDiag(:)%intpl_method = 'nearest_stod'
 
-    idx = 0 
+    idx = 0
 
     idx = idx + 1
     ExtDiag(idx)%axes = 2
@@ -945,11 +945,132 @@ module GFS_diagnostics
     endif
   endif
 
+!IVAI
+!--- air quality diagnostics ---
+  if (Model%cplaqm) then
+
+!IVAI: canopy arrays read via aqm_emis_read
+    if (associated(IntDiag(1)%claie)) then
+!      print*, 'GFS_diagnostics: claie ', IntDiag(1)%claie
+      idx = idx + 1
+      ExtDiag(idx)%axes = 2
+      ExtDiag(idx)%name = 'CLAIE'
+      ExtDiag(idx)%desc = 'Leaf Area Index ECCC'
+      ExtDiag(idx)%unit = 'numerical'
+      ExtDiag(idx)%mod_name = 'gfs_phys'
+      allocate (ExtDiag(idx)%data(nblks))
+      do nb = 1,nblks
+        ExtDiag(idx)%data(nb)%var2 => IntDiag(nb)%claie
+      enddo
+    endif
+
+    if (associated(IntDiag(1)%cfch)) then
+!      print*, 'GFS_diagnostics: cfch   ', IntDiag(1)%cfch
+      idx = idx + 1
+      ExtDiag(idx)%axes = 2
+      ExtDiag(idx)%name = 'CFCH'
+      ExtDiag(idx)%desc = 'Forest Canopy Height'
+      ExtDiag(idx)%unit = 'numerical'
+      ExtDiag(idx)%mod_name = 'gfs_phys'
+      allocate (ExtDiag(idx)%data(nblks))
+      do nb = 1,nblks
+        ExtDiag(idx)%data(nb)%var2 => IntDiag(nb)%cfch
+      enddo
+    endif
+
+    if (associated(IntDiag(1)%cfrt)) then
+!      print*, 'GFS_diagnostics: cfrt ', IntDiag(1)%cfrt
+      idx = idx + 1
+      ExtDiag(idx)%axes = 2
+      ExtDiag(idx)%name = 'CFRT'
+      ExtDiag(idx)%desc = 'Forest Canopy Fraction'
+      ExtDiag(idx)%unit = 'numerical'
+      ExtDiag(idx)%mod_name = 'gfs_phys'
+      allocate (ExtDiag(idx)%data(nblks))
+      do nb = 1,nblks
+        ExtDiag(idx)%data(nb)%var2 => IntDiag(nb)%cfrt
+      enddo
+    endif
+
+    if (associated(IntDiag(1)%cclu)) then
+!      print*, 'GFS_diagnostics: cclu ', IntDiag(1)%cclu
+      idx = idx + 1
+      ExtDiag(idx)%axes = 2
+      ExtDiag(idx)%name = 'CCLU'
+      ExtDiag(idx)%desc = 'Canopy Clumping Index'
+      ExtDiag(idx)%unit = 'numerical'
+      ExtDiag(idx)%mod_name = 'gfs_phys'
+      allocate (ExtDiag(idx)%data(nblks))
+      do nb = 1,nblks
+        ExtDiag(idx)%data(nb)%var2 => IntDiag(nb)%cclu
+      enddo
+    endif
+
+    if (associated(IntDiag(1)%cpopu)) then
+      print*, 'GFS_diagnostics: cpopu ', IntDiag(1)%cpopu
+      idx = idx + 1
+      ExtDiag(idx)%axes = 2
+      ExtDiag(idx)%name = 'CPOPU'
+      ExtDiag(idx)%desc = 'Population Density for canopy correction'
+      ExtDiag(idx)%unit = 'numerical'
+      ExtDiag(idx)%mod_name = 'gfs_phys'
+      allocate (ExtDiag(idx)%data(nblks))
+      do nb = 1,nblks
+        ExtDiag(idx)%data(nb)%var2 => IntDiag(nb)%cpopu
+      enddo
+    endif
+
+! IVAI: photdiag fields
+    if (associated(IntDiag(1)%coszens)) then
+!      print*, 'GFS_diagnostics: coszens ', IntDiag(1)%coszens
+      idx = idx + 1
+      ExtDiag(idx)%axes = 2
+      ExtDiag(idx)%name = 'COSZENS'
+      ExtDiag(idx)%desc = 'Cosine Solar Zenith Angle for Photolysis'
+      ExtDiag(idx)%unit = 'numerical'
+      ExtDiag(idx)%mod_name = 'gfs_phys'
+      allocate (ExtDiag(idx)%data(nblks))
+      do nb = 1,nblks
+        ExtDiag(idx)%data(nb)%var2 => IntDiag(nb)%coszens
+      enddo
+    endif
+
+    if (associated(IntDiag(1)%jo3o1d)) then
+!      print*, 'GFS_diagnostics: jo3o1d ', IntDiag(1)%jo3o1d
+      idx = idx + 1
+      ExtDiag(idx)%axes = 2
+      ExtDiag(idx)%name = 'JO3O1D'
+      ExtDiag(idx)%desc = 'photolysis rate O3 for canopy correction'
+      ExtDiag(idx)%unit = 'numerical'
+      ExtDiag(idx)%mod_name = 'gfs_phys'
+      allocate (ExtDiag(idx)%data(nblks))
+      do nb = 1,nblks
+        ExtDiag(idx)%data(nb)%var2 => IntDiag(nb)%jo3o1d
+      enddo
+    endif
+
+    if (associated(IntDiag(1)%jno2)) then
+!      print*, 'GFS_diagnostics: jno2 ', IntDiag(1)%jno2
+      idx = idx + 1
+      ExtDiag(idx)%axes = 2
+      ExtDiag(idx)%name = 'JNO2'
+      ExtDiag(idx)%desc = 'photolysis rate NO2 for canopy correction'
+      ExtDiag(idx)%unit = 'numerical'
+      ExtDiag(idx)%mod_name = 'gfs_phys'
+      allocate (ExtDiag(idx)%data(nblks))
+      do nb = 1,nblks
+        ExtDiag(idx)%data(nb)%var2 => IntDiag(nb)%jno2
+      enddo
+    endif
+
+  endif
+!IVAI
+
 !
 !
 !--- accumulated diagnostics ---
     do num = 1,NFXR
-      write (xtra,'(I2.2)') num 
+      write (xtra,'(I2.2)') num
       idx = idx + 1
       ExtDiag(idx)%axes = 2
       ExtDiag(idx)%name = 'fluxr_'//trim(xtra)
@@ -965,7 +1086,7 @@ module GFS_diagnostics
 !--- the next two appear to be appear to be coupling fields in gloopr
 !--- each has four elements
 !rab    do num = 1,4
-!rab      write (xtra,'(I1)') num 
+!rab      write (xtra,'(I1)') num
 !rab      idx = idx + 1
 !rab      ExtDiag(idx)%axes = 2
 !rab      ExtDiag(idx)%name = 'dswcmp_'//trim(xtra)
@@ -978,7 +1099,7 @@ module GFS_diagnostics
 !rab    enddo
 !rab
 !rab    do num = 1,4
-!rab      write (xtra,'(I1)') num 
+!rab      write (xtra,'(I1)') num
 !rab      idx = idx + 1
 !rab      ExtDiag(idx)%axes = 2
 !rab      ExtDiag(idx)%name = 'uswcmp_'//trim(xtra)
@@ -1103,7 +1224,7 @@ module GFS_diagnostics
     do nb = 1,nblks
       ExtDiag(idx)%data(nb)%var2 => IntDiag(nb)%snohfa(:)
     enddo
-    
+
     if (Model%lsm == Model%lsm_noahmp) then
      idx = idx + 1
      ExtDiag(idx)%axes = 2
@@ -1383,7 +1504,7 @@ module GFS_diagnostics
       ExtDiag(idx)%data(nb)%var2 => IntDiag(nb)%tedir(:)
     enddo
 
-    if (Model%lsm == Model%lsm_noahmp) then   
+    if (Model%lsm == Model%lsm_noahmp) then
      idx = idx + 1
      ExtDiag(idx)%axes = 2
      ExtDiag(idx)%name = 'wa_acc'
@@ -2175,7 +2296,7 @@ module GFS_diagnostics
       ExtDiag(idx)%data(nb)%var2 => IntDiag(nb)%gfluxi(:)
     enddo
 
-    if (Model%lsm == Model%lsm_noahmp) then   
+    if (Model%lsm == Model%lsm_noahmp) then
      idx = idx + 1
      ExtDiag(idx)%axes = 2
      ExtDiag(idx)%name = 'pahi'
@@ -2457,7 +2578,7 @@ module GFS_diagnostics
         ExtDiag(idx)%data(nb)%var3 => Coupling(nb)%spp_wts_pbl(:,:)
       enddo
     endif
-    
+
     if (Model%do_spp) then
       idx = idx + 1
       ExtDiag(idx)%axes = 3
@@ -2470,7 +2591,7 @@ module GFS_diagnostics
         ExtDiag(idx)%data(nb)%var3 => Coupling(nb)%spp_wts_sfc(:,:)
       enddo
     endif
-    
+
     if (Model%do_spp) then
       idx = idx + 1
       ExtDiag(idx)%axes = 3
@@ -2483,7 +2604,7 @@ module GFS_diagnostics
         ExtDiag(idx)%data(nb)%var3 => Coupling(nb)%spp_wts_mp(:,:)
       enddo
     endif
-    
+
     if (Model%do_spp) then
       idx = idx + 1
       ExtDiag(idx)%axes = 3
@@ -2496,7 +2617,7 @@ module GFS_diagnostics
         ExtDiag(idx)%data(nb)%var3 => Coupling(nb)%spp_wts_gwd(:,:)
       enddo
     endif
-    
+
     if (Model%do_spp) then
       idx = idx + 1
       ExtDiag(idx)%axes = 3
@@ -2666,7 +2787,7 @@ module GFS_diagnostics
       do nb = 1,nblks
         ExtDiag(idx)%data(nb)%int2 => Sfcprop(nb)%use_lake_model(:)
       enddo
-    
+
       if(Model%iopt_lake==Model%iopt_lake_clm) then
 
         ! Populate the 3D arrays separately since the code is complicated:
@@ -2693,7 +2814,7 @@ module GFS_diagnostics
         do nb = 1,nblks
            ExtDiag(idx)%data(nb)%int2 => Sfcprop(nb)%lake_cannot_freeze(:)
         enddo
-        
+
         idx = idx + 1
         ExtDiag(idx)%axes = 2
         ExtDiag(idx)%name = 'lake_t2m'
@@ -2801,7 +2922,7 @@ module GFS_diagnostics
         do nb = 1,nblks
           ExtDiag(idx)%data(nb)%var2 => Sfcprop(nb)%lake_ht(:)
         enddo
-        
+
       endif
 
   endif
@@ -2898,8 +3019,8 @@ module GFS_diagnostics
     do nb = 1,nblks
       ExtDiag(idx)%data(nb)%var3 => IntDiag(nb)%du3dt_pbl(:,:)
     enddo
-!    
-! dv3dt_pbl     
+!
+! dv3dt_pbl
     idx = idx + 1
     ExtDiag(idx)%axes = 3
     ExtDiag(idx)%name = 'dv3dt_pbl_ugwp'
@@ -2910,8 +3031,8 @@ module GFS_diagnostics
     do nb = 1,nblks
       ExtDiag(idx)%data(nb)%var3 => IntDiag(nb)%dv3dt_pbl(:,:)
     enddo
-!    
-! dt3dt_pbl     
+!
+! dt3dt_pbl
     idx = idx + 1
     ExtDiag(idx)%axes = 3
     ExtDiag(idx)%name = 'dt3dt_pbl_ugwp'
@@ -2923,8 +3044,8 @@ module GFS_diagnostics
       ExtDiag(idx)%data(nb)%var3 => IntDiag(nb)%dt3dt_pbl(:,:)
     enddo
 !
-! uav_ugwp 
-! 
+! uav_ugwp
+!
     idx = idx + 1
     ExtDiag(idx)%axes = 3
     ExtDiag(idx)%name = 'uav_ugwp'
@@ -2936,8 +3057,8 @@ module GFS_diagnostics
       ExtDiag(idx)%data(nb)%var3 => IntDiag(nb)%uav_ugwp(:,:)
     enddo
 !
-! tav_ugwp 
-! 
+! tav_ugwp
+!
     idx = idx + 1
     ExtDiag(idx)%axes = 3
     ExtDiag(idx)%name = 'tav_ugwp'
@@ -2971,7 +3092,7 @@ module GFS_diagnostics
       ExtDiag(idx)%data(nb)%var3 => IntDiag(nb)%du3dt_ngw(:,:)
     enddo
 !
-!    
+!
     idx = idx + 1
     ExtDiag(idx)%axes = 3
     ExtDiag(idx)%name = 'du3dt_mtb'
@@ -3443,7 +3564,7 @@ module GFS_diagnostics
           endif
         enddo
       enddo
-      
+
       if_qdiag3d: if(Model%qdiag3d) then
 
         idx = idx + 1
@@ -3488,7 +3609,7 @@ module GFS_diagnostics
 
 !rab
 !rab    do num = 1,5+Mdl_parms%pl_coeff
-!rab      write (xtra,'(I1)') num 
+!rab      write (xtra,'(I1)') num
 !rab      idx = idx + 1
 !rab      ExtDiag(idx)%axes = 3
 !rab      ExtDiag(idx)%name = 'dtend_'//trim(xtra)
@@ -3854,7 +3975,7 @@ module GFS_diagnostics
     idx = idx + 1
     ExtDiag(idx)%axes = 2
     ExtDiag(idx)%name = 'scolor'
-    ExtDiag(idx)%desc = 'soil color in integer 1-20' 
+    ExtDiag(idx)%desc = 'soil color in integer 1-20'
     ExtDiag(idx)%unit = 'number'
     ExtDiag(idx)%mod_name = 'gfs_sfc'
     allocate (ExtDiag(idx)%data(nblks))
@@ -5181,7 +5302,7 @@ module GFS_diagnostics
     character(:), allocatable :: fullname
 
     integer :: nk, idx0, iblk
-    
+
     do iblk=1,nblks
       call link_all_levels(Sfcprop(iblk)%lake_snow_z3d, 'lake_snow_z3d', 'lake snow level depth', 'm')
     enddo
@@ -5309,6 +5430,6 @@ module GFS_diagnostics
      !
   end function soil_layer_depth
 
-!-------------------------------------------------------------------------      
+!-------------------------------------------------------------------------
 
 end module GFS_diagnostics
