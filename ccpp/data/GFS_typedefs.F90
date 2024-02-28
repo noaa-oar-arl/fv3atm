@@ -1201,8 +1201,8 @@ module GFS_typedefs
 
     real(kind=kind_phys) :: rbcr            !< Critical Richardson Number in the PBL scheme
     real(kind=kind_phys) :: betascu         !< Tuning parameter for prog. closure shallow clouds
-    real(kind=kind_phys) :: betamcu         !< Tuning parameter for prog. closure midlevel clouds 
-    real(kind=kind_phys) :: betadcu         !< Tuning parameter for prog. closure deep clouds 
+    real(kind=kind_phys) :: betamcu         !< Tuning parameter for prog. closure midlevel clouds
+    real(kind=kind_phys) :: betadcu         !< Tuning parameter for prog. closure deep clouds
 
     !--- MYNN parameters/switches
     logical              :: do_mynnedmf
@@ -1578,7 +1578,7 @@ module GFS_typedefs
     real(kind=kind_phys) :: huge            !< huge fill value
 
 !--- AQM Canopy
-    logical              :: do_canopy       !< control flag for aqm canopy effects 
+    logical              :: do_canopy       !< control flag for aqm canopy effects
 !--- lightning threat and diagsnostics
     logical              :: lightning_threat !< report lightning threat indices
 
@@ -2110,6 +2110,19 @@ module GFS_typedefs
 
     ! Diagnostics for coupled air quality model
     real (kind=kind_phys), pointer :: aod   (:)   => null()    !< instantaneous aerosol optical depth ( n/a )
+
+!IVAI
+    ! Diagnostics for coupled air quality model
+    real (kind=kind_phys), pointer :: claie(:)    => null()    ! Leaf Area Index ECCC
+    real (kind=kind_phys), pointer :: cfch (:)    => null()    ! Forest Canopy Height
+    real (kind=kind_phys), pointer :: cfrt (:)    => null()    ! Forest Fraction
+    real (kind=kind_phys), pointer :: cclu (:)    => null()    ! Clumping Index
+    real (kind=kind_phys), pointer :: cpopu(:)    => null()    ! Population density
+
+    real (kind=kind_phys), pointer :: coszens(:)  => null()    ! Cosine SZA for photolysis
+    real (kind=kind_phys), pointer :: jo3o1d(:)   => null()    ! instantaneous O3O1D photolysis rate
+    real (kind=kind_phys), pointer :: jno2  (:)   => null()    ! instantaneous NO2   photolysis rate
+!IVAI
 
     ! Auxiliary output arrays for debugging
     real (kind=kind_phys), pointer :: aux2d(:,:)  => null()    !< auxiliary 2d arrays in output (for debugging)
@@ -3912,10 +3925,10 @@ module GFS_typedefs
     real(kind=kind_phys) :: radar_tten_limits(2) = (/ limit_unspecified, limit_unspecified /)
     integer :: itime
     integer :: w3kindreal,w3kindint
-   
+
 !--- switch for aqm canopy effects
     logical :: do_canopy       = .false.         !< flag for canopy option
- 
+
 !--- END NAMELIST VARIABLES
 
     NAMELIST /gfs_physics_nml/                                                              &
@@ -4064,7 +4077,7 @@ module GFS_typedefs
                           !--- (DFI) time ranges with radar-prescribed microphysics tendencies
                           !          and (maybe) convection suppression
                                fh_dfi_radar, radar_tten_limits, do_cap_suppress,            &
-                          !    aqm canopy option 
+                          !    aqm canopy option
                                do_canopy,                                                   &
                           !--- GSL lightning threat indices
                                lightning_threat
@@ -4808,7 +4821,7 @@ module GFS_typedefs
     Model%hwrf_samfdeep = hwrf_samfdeep
     Model%hwrf_samfshal = hwrf_samfshal
 
-    !--prognostic closure - moisture coupling                                                                                 
+    !--prognostic closure - moisture coupling
     if ((progsigma .and. imfdeepcnv/=2) .and. (progsigma .and. imfdeepcnv/=5)) then
        write(*,*) 'Logic error: progsigma requires imfdeepcnv=2 or 5'
        stop
@@ -5497,9 +5510,9 @@ module GFS_typedefs
           write(*,*) 'NSSL micro: CCN is ON'
         ENDIF
       ENDIF
-      
+
       ! add checks for nssl_3moment
-      IF ( ( Model%nssl_3moment ) ) THEN 
+      IF ( ( Model%nssl_3moment ) ) THEN
         IF ( Model%ntrz < 1 ) THEN
           write(*,*) 'NSSL micro: 3-moment is ON, but rain_ref tracer is missing'
           stop
@@ -7863,6 +7876,40 @@ module GFS_typedefs
       allocate (Diag%aod(IM))
       Diag%aod = zero
     end if
+
+!IVAI:
+    ! Air quality diagnostics
+    ! -- initialize diagnostic variables
+    if (Model%cplaqm) then
+
+!IVAI: canopy arrays read via aqm_emis_read
+      allocate (Diag%claie(IM))
+      Diag%claie = zero
+
+      allocate (Diag%cfch  (IM))
+      Diag%cfch   = zero
+
+      allocate (Diag%cfrt  (IM))
+      Diag%cfrt   = zero
+
+      allocate (Diag%cclu  (IM))
+      Diag%cclu   = zero
+
+      allocate (Diag%cpopu (IM))
+      Diag%cpopu  = zero
+
+!IVAI: photdiag arrays
+      allocate (Diag%coszens(IM))
+      Diag%coszens= zero
+
+      allocate (Diag%jo3o1d(IM))
+      Diag%jo3o1d = zero
+
+      allocate (Diag%jno2(IM))
+      Diag%jno2 = zero
+
+    end if
+!IVAI
 
     ! Auxiliary arrays in output for debugging
     if (Model%naux2d>0) then
