@@ -1295,8 +1295,12 @@ subroutine update_atmos_chemistry(state, rc)
 
   real(ESMF_KIND_R8), dimension(:,:,:,:), pointer :: q
 
+!IVAI: add coszens, jo3o1d, jno2, claie, cfch, cfrt, cclu, cpopu
   real(ESMF_KIND_R8), dimension(:,:), pointer :: aod, area, canopy, cmm,  &
-    dqsfc, dtsfc, fice, flake, focn, fsnow, hpbl, nswsfc, oro, psfc, &
+    claie, cfch, cfrt, cclu, cpopu, & !IVAI
+    dqsfc, dtsfc, fice, flake, focn, fsnow, hpbl, &
+    coszens, jo3o1d, jno2, &  !IVAI
+    nswsfc, oro, psfc, &
     q2m, rain, rainc, rca, shfsfc, slmsk, stype, swet, t2m, tsfc,    &
     u10m, uustar, v10m, vfrac, xlai, zorl
 
@@ -1323,6 +1327,42 @@ subroutine update_atmos_chemistry(state, rc)
         call cplFieldGet(state,'inst_tracer_diag_aod', farrayPtr2d=aod, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
           line=__LINE__, file=__FILE__, rcToReturn=rc)) return
+
+!IVAI: case ('import') canopy arrays read in via 'aqm_emiss_read'
+
+        call cplFieldGet(state,'inst_tracer_diag_claie', farrayPtr2d=claie, rc=localrc)
+        if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
+          line=__LINE__, file=__FILE__, rcToReturn=rc)) return
+
+        call cplFieldGet(state,'inst_tracer_diag_cfch', farrayPtr2d=cfch, rc=localrc)
+        if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
+          line=__LINE__, file=__FILE__, rcToReturn=rc)) return
+
+        call cplFieldGet(state,'inst_tracer_diag_cfrt', farrayPtr2d=cfrt, rc=localrc)
+        if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
+          line=__LINE__, file=__FILE__, rcToReturn=rc)) return
+
+        call cplFieldGet(state,'inst_tracer_diag_cclu', farrayPtr2d=cclu, rc=localrc)
+        if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
+          line=__LINE__, file=__FILE__, rcToReturn=rc)) return
+
+        call cplFieldGet(state,'inst_tracer_diag_cpopu', farrayPtr2d=cpopu, rc=localrc)
+        if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
+          line=__LINE__, file=__FILE__, rcToReturn=rc)) return
+
+!IVAI: case ('import') photdiag arrays
+        call cplFieldGet(state,'inst_tracer_diag_coszens', farrayPtr2d=coszens, rc=localrc)
+        if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
+          line=__LINE__, file=__FILE__, rcToReturn=rc)) return
+
+        call cplFieldGet(state,'inst_tracer_diag_jo3o1d', farrayPtr2d=jo3o1d, rc=localrc)
+        if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
+          line=__LINE__, file=__FILE__, rcToReturn=rc)) return
+
+        call cplFieldGet(state,'inst_tracer_diag_jno2', farrayPtr2d=jno2, rc=localrc)
+        if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
+          line=__LINE__, file=__FILE__, rcToReturn=rc)) return
+!IVAI
       end if
 
       !--- do not import tracer concentrations by default
@@ -1395,6 +1435,87 @@ subroutine update_atmos_chemistry(state, rc)
             GFS_Data(nb)%IntDiag%aod(ix) = aod(i,j)
           enddo
         enddo
+!IVAI: case ('import') canopy arrays read in via aqm_emiss_read
+        do j = 1, nj
+          jb = j + Atm_block%jsc - 1
+          do i = 1, ni
+            ib = i + Atm_block%isc - 1
+            nb = Atm_block%blkno(ib,jb)
+            ix = Atm_block%ixp(ib,jb)
+            GFS_Data(nb)%IntDiag%claie(ix) = claie(i,j)
+          enddo
+        enddo
+
+        do j = 1, nj
+          jb = j + Atm_block%jsc - 1
+          do i = 1, ni
+            ib = i + Atm_block%isc - 1
+            nb = Atm_block%blkno(ib,jb)
+            ix = Atm_block%ixp(ib,jb)
+            GFS_Data(nb)%IntDiag%cfch(ix) = cfch(i,j)
+          enddo
+        enddo
+
+        do j = 1, nj
+          jb = j + Atm_block%jsc - 1
+          do i = 1, ni
+            ib = i + Atm_block%isc - 1
+            nb = Atm_block%blkno(ib,jb)
+            ix = Atm_block%ixp(ib,jb)
+            GFS_Data(nb)%IntDiag%cfrt(ix) = cfrt(i,j)
+          enddo
+        enddo
+
+        do j = 1, nj
+          jb = j + Atm_block%jsc - 1
+          do i = 1, ni
+            ib = i + Atm_block%isc - 1
+            nb = Atm_block%blkno(ib,jb)
+            ix = Atm_block%ixp(ib,jb)
+            GFS_Data(nb)%IntDiag%cclu(ix) = cclu(i,j)
+          enddo
+        enddo
+
+        do j = 1, nj
+          jb = j + Atm_block%jsc - 1
+          do i = 1, ni
+            ib = i + Atm_block%isc - 1
+            nb = Atm_block%blkno(ib,jb)
+            ix = Atm_block%ixp(ib,jb)
+            GFS_Data(nb)%IntDiag%cpopu(ix) = cpopu(i,j)
+          enddo
+        enddo
+!IVAI: case ('import') photdiag arrays
+        do j = 1, nj
+          jb = j + Atm_block%jsc - 1
+          do i = 1, ni
+            ib = i + Atm_block%isc - 1
+            nb = Atm_block%blkno(ib,jb)
+            ix = Atm_block%ixp(ib,jb)
+            GFS_Data(nb)%IntDiag%coszens(ix) = coszens(i,j)
+          enddo
+        enddo
+
+        do j = 1, nj
+          jb = j + Atm_block%jsc - 1
+          do i = 1, ni
+            ib = i + Atm_block%isc - 1
+            nb = Atm_block%blkno(ib,jb)
+            ix = Atm_block%ixp(ib,jb)
+            GFS_Data(nb)%IntDiag%jo3o1d(ix) = jo3o1d(i,j)
+          enddo
+        enddo
+
+        do j = 1, nj
+          jb = j + Atm_block%jsc - 1
+          do i = 1, ni
+            ib = i + Atm_block%isc - 1
+            nb = Atm_block%blkno(ib,jb)
+            ix = Atm_block%ixp(ib,jb)
+            GFS_Data(nb)%IntDiag%jno2(ix) = jno2(i,j)
+          enddo
+        enddo
+!IVAI
       end if
 
       if (GFS_control%debug) then
@@ -1403,6 +1524,33 @@ subroutine update_atmos_chemistry(state, rc)
         if (GFS_control%cplaqm) &
           write(6,'("update_atmos: ",a,": aod  - min/max    ",3g16.6)') &
             trim(state), minval(aod), maxval(aod)
+!IVAI: case ('import') canopy arrays read via aqm_emiss_read
+        if (GFS_control%cplaqm) &
+          write(6,'("update_atmos: ",a,": claie - min/max    ",3g16.6)') &
+            trim(state), minval(claie), maxval(claie)
+        if (GFS_control%cplaqm) &
+          write(6,'("update_atmos: ",a,": cfch  - min/max    ",3g16.6)') &
+            trim(state), minval(cfch), maxval(cfch)
+        if (GFS_control%cplaqm) &
+          write(6,'("update_atmos: ",a,": cfrt  - min/max    ",3g16.6)') &
+            trim(state), minval(cfrt), maxval(cfrt)
+        if (GFS_control%cplaqm) &
+          write(6,'("update_atmos: ",a,": cclu  - min/max    ",3g16.6)') &
+            trim(state), minval(cclu), maxval(cclu)
+        if (GFS_control%cplaqm) &
+          write(6,'("update_atmos: ",a,": cpopu - min/max    ",3g16.6)') &
+            trim(state), minval(cpopu), maxval(cpopu)
+!IVAI: case ('import') photdiag arrays
+        if (GFS_control%cplaqm) &
+          write(6,'("update_atmos: ",a,": coszens - min/max    ",3g16.6)') &
+            trim(state), minval(coszens), maxval(coszens)
+        if (GFS_control%cplaqm) &
+          write(6,'("update_atmos: ",a,": jo3o1d  - min/max    ",3g16.6)') &
+            trim(state), minval(jo3o1d), maxval(jo3o1d)
+        if (GFS_control%cplaqm) &
+          write(6,'("update_atmos: ",a,": jno2    - min/max    ",3g16.6)') &
+            trim(state), minval(jno2), maxval(jno2)
+!IVAI
       end if
 
     case ('export')

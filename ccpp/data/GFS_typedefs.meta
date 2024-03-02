@@ -1639,38 +1639,75 @@
   type = real
   kind = kind_phys
   active = (control_for_land_surface_scheme == identifier_for_noahmp_land_surface_scheme)
-[canopylaixy]
+### IVAI
+[claie]
   standard_name = canopy_leaf_area_index
   long_name = canopy leaf area index
   units = none
   dimensions = (horizontal_loop_extent)
   type = real
   kind = kind_phys
-  active = (control_for_land_surface_scheme == identifier_for_noah_land_surface_scheme .or. control_for_land_surface_scheme == identifier_for_noahmp_land_surface_scheme .or. (control_for_land_surface_scheme == identifier_for_ruc_land_surface_scheme .and. flag_for_reading_canopy_leaf_area_index_from_input))
-[canopyfchxy]
+[cfch]
   standard_name = canopy_forest_height
   long_name = canopy forest height
   units = m
   dimensions = (horizontal_loop_extent)
   type = real
   kind = kind_phys
-  active = (control_for_land_surface_scheme == identifier_for_noah_land_surface_scheme .or. control_for_land_surface_scheme == identifier_for_noahmp_land_surface_scheme .or. (control_for_land_surface_scheme == identifier_for_ruc_land_surface_scheme .and. flag_for_reading_canopy_forest_height_from_input))
-[canopyfrtxy]
+[cfrt]
   standard_name = canopy_forest_fraction
   long_name = canopy forest fraction
   units = none
   dimensions = (horizontal_loop_extent)
   type = real
   kind = kind_phys
-  active = (control_for_land_surface_scheme == identifier_for_noah_land_surface_scheme .or. control_for_land_surface_scheme == identifier_for_noahmp_land_surface_scheme .or. (control_for_land_surface_scheme == identifier_for_ruc_land_surface_scheme .and. flag_for_reading_canopy_forest_fraction_from_input))
-[canopycluxy]
+[cclu]
   standard_name = canopy_clumping_index
   long_name = canopy clumping index
   units = none
   dimensions = (horizontal_loop_extent)
   type = real
   kind = kind_phys
-  active = (control_for_land_surface_scheme == identifier_for_noah_land_surface_scheme .or. control_for_land_surface_scheme == identifier_for_noahmp_land_surface_scheme .or. (control_for_land_surface_scheme == identifier_for_ruc_land_surface_scheme .and. flag_for_reading_canopy_clumping_index_from_input))
+[cpopu]
+  standard_name = canopy_population_density
+  long_name = population density used for canopy correction
+  units = none
+  dimensions = (horizontal_loop_extent)
+  type = real
+  kind = kind_phys
+### IVAI
+#[canopylaixy]
+#  standard_name = canopy_leaf_area_index
+#  long_name = canopy leaf area index
+#  units = none
+#  dimensions = (horizontal_loop_extent)
+#  type = real
+#  kind = kind_phys
+#  active = (control_for_land_surface_scheme == identifier_for_noah_land_surface_scheme .or. control_for_land_surface_scheme == identifier_for_noahmp_land_surface_scheme .or. (control_for_land_surface_scheme == identifier_for_ruc_land_surface_scheme .and. flag_for_reading_canopy_leaf_area_index_from_input))
+#[canopyfchxy]
+#  standard_name = canopy_forest_height
+#  long_name = canopy forest height
+#  units = m
+#  dimensions = (horizontal_loop_extent)
+#  type = real
+#  kind = kind_phys
+#  active = (control_for_land_surface_scheme == identifier_for_noah_land_surface_scheme .or. control_for_land_surface_scheme == identifier_for_noahmp_land_surface_scheme .or. (control_for_land_surface_scheme == identifier_for_ruc_land_surface_scheme .and. flag_for_reading_canopy_forest_height_from_input))
+#[canopyfrtxy]
+#  standard_name = canopy_forest_fraction
+#  long_name = canopy forest fraction
+#  units = none
+#  dimensions = (horizontal_loop_extent)
+#  type = real
+#  kind = kind_phys
+#  active = (control_for_land_surface_scheme == identifier_for_noah_land_surface_scheme .or. control_for_land_surface_scheme == identifier_for_noahmp_land_surface_scheme .or. (control_for_land_surface_scheme == identifier_for_ruc_land_surface_scheme .and. flag_for_reading_canopy_forest_fraction_from_input))
+#[canopycluxy]
+#  standard_name = canopy_clumping_index
+#  long_name = canopy clumping index
+#  units = none
+#  dimensions = (horizontal_loop_extent)
+#  type = real
+#  kind = kind_phys
+#  active = (control_for_land_surface_scheme == identifier_for_noah_land_surface_scheme .or. control_for_land_surface_scheme == identifier_for_noahmp_land_surface_scheme .or. (control_for_land_surface_scheme == identifier_for_ruc_land_surface_scheme .and. flag_for_reading_canopy_clumping_index_from_input))
 [taussxy]
   standard_name = dimensionless_age_of_surface_snow
   long_name = non-dimensional snow age
