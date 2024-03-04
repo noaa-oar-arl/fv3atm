@@ -8269,11 +8269,11 @@
 [cpopu]
   standard_name = canopy_population_density
   long_name = population density used for canopy correction
-  units = none
+  units = 10000people 10km-2
   dimensions = (horizontal_loop_extent)
   type = real
   kind = kind_phys
-### IVAI
+###IVAI
 [topfsw]
   standard_name = sw_fluxes_top_atmosphere
   long_name = sw radiation fluxes at toa
