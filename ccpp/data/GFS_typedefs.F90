@@ -2110,15 +2110,15 @@ module GFS_typedefs
 
     ! Diagnostics for coupled air quality model
     real (kind=kind_phys), pointer :: aod   (:)   => null()    !< instantaneous aerosol optical depth ( n/a )
-
-!IVAI
-    ! Diagnostics for coupled air quality model
-    real (kind=kind_phys), pointer :: claie(:)    => null()    ! Leaf Area Index ECCC
+!IVAI:
+    ! Diagnostics for coupled air quality model GFS_diag_type
+    ! Canopy fields
+    real (kind=kind_phys), pointer :: claie(:)    => null()    ! Leaf Area Index
     real (kind=kind_phys), pointer :: cfch (:)    => null()    ! Forest Canopy Height
     real (kind=kind_phys), pointer :: cfrt (:)    => null()    ! Forest Fraction
     real (kind=kind_phys), pointer :: cclu (:)    => null()    ! Clumping Index
     real (kind=kind_phys), pointer :: cpopu(:)    => null()    ! Population density
-
+    ! photdiag diagnostics
     real (kind=kind_phys), pointer :: coszens(:)  => null()    ! Cosine SZA for photolysis
     real (kind=kind_phys), pointer :: jo3o1d(:)   => null()    ! instantaneous O3O1D photolysis rate
     real (kind=kind_phys), pointer :: jno2  (:)   => null()    ! instantaneous NO2   photolysis rate
