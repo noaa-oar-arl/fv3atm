@@ -2272,6 +2272,7 @@ module GFS_typedefs
 
     ! Diagnostics for coupled air quality model
     real (kind=kind_phys), pointer :: aod   (:)   => null()    !< instantaneous aerosol optical depth ( n/a )
+    real (kind=kind_phys), pointer :: aext  (:,:) => null()    !< instantaneous 3D aerosol extinction ( n/a )
 
     ! Diagnostics for coupled air quality model
     real (kind=kind_phys), pointer :: coszens(:)  => null()    ! Cosine SZA for photolysis
@@ -8416,6 +8417,13 @@ module GFS_typedefs
     if (Model%cplaqm) then
       allocate (Diag%aod(IM))
       Diag%aod = zero
+    end if
+
+    ! Air quality diagnostics
+    ! -- initialize 3D diagnostic variables
+    if (Model%cplaqm) then
+      allocate (Diag%aext(IM,Model%levs))
+      Diag%aext = zero
     end if
 
     ! Air quality diagnostics

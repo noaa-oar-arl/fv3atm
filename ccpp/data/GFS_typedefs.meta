@@ -3643,6 +3643,16 @@
   units = count
   dimensions = ()
   type = integer
+### IVAI
+[aext]
+  standard_name = aerosol_3D_extinction_from_AQM
+  long_name = AER_EXT_550 3d array for extended diagnostics output from AQM
+  units = none
+  dimensions = (horizontal_dimension,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (flag_for_air_quality_coupling)
+### IVAI
 [naux2d]
   standard_name = number_of_xy_dimensioned_auxiliary_arrays
   long_name = number of 2d auxiliary arrays to output (for debugging)

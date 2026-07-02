@@ -1158,6 +1158,7 @@ subroutine update_atmos_chemistry(state, rc)
   integer :: ib, jb, im
 
   real(ESMF_KIND_R8), dimension(:,:,:),   pointer :: cldfra,       &
+                                                     aext,         & !IVAI
                                                      pfils, pflls, &
                                                      phii,  phil,  &
                                                      prsi,  prsl,  &
@@ -1197,6 +1198,11 @@ subroutine update_atmos_chemistry(state, rc)
 
       if (GFS_control%cplaqm) then
         call cplFieldGet(state,'inst_tracer_diag_aod', farrayPtr2d=aod, rc=localrc)
+        if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
+          line=__LINE__, file=__FILE__, rcToReturn=rc)) return
+
+!IVAI: add 3D AQM field AERO_EXT_550
+        call cplFieldGet(state,'inst_tracer_diag_aext', farrayPtr3d=aext, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
           line=__LINE__, file=__FILE__, rcToReturn=rc)) return
 
@@ -1309,6 +1315,23 @@ subroutine update_atmos_chemistry(state, rc)
             ix = Atm_block%ixp(ib,jb)
             im = GFS_Control%chunk_begin(nb)+ix-1
             GFS_IntDiag%aod(im) = aod(i,j)
+          enddo
+        enddo
+
+!IVAI: 3D AQM diag AERO_EXT_550
+!$OMP parallel do default (none) &
+!$OMP               shared  (nk, nj, ni, Atm_block, GFS_Control, GFS_Intdiag, aext)  &
+!$OMP               private (k, j, jb, i, ib, nb, ix, im)
+        do k = 1, nk
+          do j = 1, nj
+            jb = j + Atm_block%jsc - 1
+            do i = 1, ni
+              ib = i + Atm_block%isc - 1
+              nb = Atm_block%blkno(ib,jb)
+              ix = Atm_block%ixp(ib,jb)
+              im = GFS_Control%chunk_begin(nb)+ix-1
+              GFS_Intdiag%aext(im,k) = aext(i,j,k)
+            enddo
           enddo
         enddo
 
@@ -1436,6 +1459,9 @@ subroutine update_atmos_chemistry(state, rc)
         if (GFS_control%cplaqm) &
           write(6,'("update_atmos: ",a,": aod  - min/max    ",3g16.6)') &
             trim(state), minval(aod), maxval(aod)
+!IVAI: add 3D AQM diag AERO_EXT_550
+          write(6,'("update_atmos: ",a,": aext  - min/max    ",3g16.6)') &
+            trim(state), minval(aext), maxval(aext)
 !IVAI: case ('import') canopy arrays read via aqm_emis_read
         if (GFS_control%cplaqm .and. GFS_control%do_canopy) &
           write(6,'("update_atmos: ",a,": claie - min/max    ",3g16.6)') &
