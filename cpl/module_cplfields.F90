@@ -138,8 +138,8 @@ module module_cplfields
     FieldInfo("cpl_scalars                              ", "s")]
 
 ! Import Fields ----------------------------------------
-  !> Number of import fields (IVAI: add 3 inst_tracer_diag)
-  integer,          public, parameter :: NimportFields = 42 + 3 + 5
+  !> Number of import fields (IVAI: add 3 inst_tracer_diag + 5 2D inst_tracer_diag + 1 3D inst_tracer_diag_aext)
+  integer,          public, parameter :: NimportFields = 42 + 3 + 5 + 1 ! IVAI
   !> Logicals to inidicate if field is valid
   logical,          public            :: importFieldsValid(NimportFields)
   !> ESMF array for import fields
@@ -164,6 +164,8 @@ module module_cplfields
     FieldInfo("inst_ice_vis_dir_albedo                  ", "s"), &
     FieldInfo("wave_z0_roughness_length                 ", "s"), &
     FieldInfo("inst_tracer_diag_aod                     ", "s"), &
+!IVAI: import 3D cplaqm field AERO_EXT_550
+    FieldInfo("inst_tracer_diag_aext                    ", "l"), &
 !IVAI: import canopy fields from AQM component
     FieldInfo("inst_tracer_diag_claie                   ", "s"), &
     FieldInfo("inst_tracer_diag_cfch                    ", "s"), &
